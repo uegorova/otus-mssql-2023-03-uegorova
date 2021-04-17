@@ -64,15 +64,11 @@ select distinct o.OrderID
 from Sales.Orders as o
 inner join Sales.OrderLines as ol on ol.OrderID = o.OrderID
 inner join Sales.Customers as c on c.CustomerID = o.CustomerID 
-where ol.UnitPrice > 100
-	and ol.Quantity > 20
+where (ol.UnitPrice > 100 or ol.Quantity > 20)
 	and ol.PickingCompletedWhen is not null
 order by datepart(q, o.OrderDate) 
-	,case when month(o.OrderDate) <=4 then 1
-			when month(o.OrderDate) >8 then 3
-			else 2
-		end
-	,convert(varchar, o.OrderDate, 104)
+	,OrderThirdofYear
+	,o.OrderDate
 
 
 --вариант запроса с постраничной выборкой, пропустив первую 1000 и отобразив следующие 100 записей
