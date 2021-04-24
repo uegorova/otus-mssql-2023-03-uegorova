@@ -111,7 +111,7 @@ from
 		,IsoAlpha3Code
 		,cast(IsoNumericCode as nvarchar(3)) as IsoNumericCode
 	from Application.Countries) as CustomerCode
-	unpivot (CustomerCode FOR Code in (IsoAlpha3Code,IsoNumericCode)) as unpvt
+	unpivot (Code FOR TypeCode in (IsoAlpha3Code,IsoNumericCode)) as unpvt
 
 /*
 4. Выберите по каждому клиенту два самых дорогих товара, которые он покупал.
