@@ -90,10 +90,64 @@ return
 	group by c.CustomerID, i.InvoiceID
 )
 
+set statistics time, io on 
 select * from udf_FindInvoiceOfCustomer (100)
+print 'Next'
 execute udp_FindInvoiceOfCustomer @СustomerID = 100
 
---По производительности процедура и функция одинаковые, строят одинаковые планы запросов, которые сразу можно увидеть
+--Процедура и функция строят одинаковые планы запросов, разделяя Rlative Cost 50/50 но выполнение по времени разное:
+--Функция 
+
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 0 ms.
+--SQL Server parse and compile time: 
+--   CPU time = 10 ms, elapsed time = 10 ms.
+
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 0 ms.
+
+--(104 rows affected)
+--Table 'InvoiceLines'. Scan count 2, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 161, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+--Table 'InvoiceLines'. Segment reads 1, segment skipped 0.
+--Table 'Invoices'. Scan count 1, logical reads 3, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+--Table 'Worktable'. Scan count 0, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+--Table 'Customers'. Scan count 0, logical reads 2, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+
+--(1 row affected)
+
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 73 ms.
+
+---процедура
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 0 ms.
+--SQL Server parse and compile time: 
+--   CPU time = 0 ms, elapsed time = 0 ms.
+
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 0 ms.
+--Table 'InvoiceLines'. Scan count 2, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 161, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+--Table 'InvoiceLines'. Segment reads 1, segment skipped 0.
+--Table 'Invoices'. Scan count 1, logical reads 3, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+--Table 'Worktable'. Scan count 0, logical reads 0, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+--Table 'Customers'. Scan count 0, logical reads 2, physical reads 0, page server reads 0, read-ahead reads 0, page server read-ahead reads 0, lob logical reads 0, lob physical reads 0, lob page server reads 0, lob read-ahead reads 0, lob page server read-ahead reads 0.
+
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 150 ms.
+
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 0 ms.
+
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 150 ms.
+--SQL Server parse and compile time: 
+--   CPU time = 0 ms, elapsed time = 0 ms.
+
+-- SQL Server Execution Times:
+--   CPU time = 0 ms,  elapsed time = 0 ms.
+
+--из вышеприведенного видно, при данном объеме данных функция использует больше CPU time, а процедура Elapsed Time.
+
 
 --2. Создала скалярную функцию по поиску суммы всех покупок клиента и такую же процедуру
 create function dbo.udf_FindValueCustomer (@СustomerID int)
@@ -130,7 +184,7 @@ select dbo.udf_FindValueCustomer (100)
 execute dbo.udp_FindValueCustomer 100
 
 --процедура забирает больше ресурсов, при выполнении функции не отображается план запроса внутри, только Constant Scan, а в процедуре - отображается. 
---Процедура будет выполняться по построенному плану запроса, даже если ситуация меняется и более оптимальным будет другой
+--Процедура будет выполняться по построенному плану запроса, даже если ситуация меняется и более оптимальным будет другой план запроса
 
 /*
 4) Создайте табличную функцию покажите как ее можно вызвать для каждой строки result set'а без использования цикла. 
