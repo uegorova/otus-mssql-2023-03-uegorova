@@ -92,7 +92,6 @@ return
 
 set statistics time, io on 
 select * from udf_FindInvoiceOfCustomer (100)
-print 'Next'
 execute udp_FindInvoiceOfCustomer @СustomerID = 100
 
 --Процедура и функция строят одинаковые планы запросов, разделяя Rlative Cost 50/50 но выполнение по времени разное:
@@ -190,12 +189,12 @@ execute dbo.udp_FindValueCustomer 100
 4) Создайте табличную функцию покажите как ее можно вызвать для каждой строки result set'а без использования цикла. 
 */
 
-declare @CustomerId int = 1
-select CustomerID
+
+select a.CustomerID
 	,InvoiceID
 	,SumInvoice
-	,dbo.udf_FindValueCustomer (@CustomerId) as SumCustomer
-from dbo.udf_FindInvoiceOfCustomer (@CustomerId)
+from Sales.Customers as b 
+cross apply dbo.udf_FindInvoiceOfCustomer(CustomerID) as a
 
 /*
 5) Опционально. Во всех процедурах укажите какой уровень изоляции транзакций вы бы использовали и почему. 
